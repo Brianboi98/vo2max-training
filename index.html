@@ -1,0 +1,850 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VO₂max Training Plan</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #080808;
+    --surface: #0f0f0f;
+    --border: #1c1c1c;
+    --border-hover: #2a2a2a;
+    --text: #e8e8e8;
+    --muted: #444;
+    --dim: #222;
+    --green: #3ddc84;
+    --yellow: #f5c842;
+    --orange: #f47c3c;
+    --purple: #a78bfa;
+    --blue: #60a5fa;
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-weight: 300;
+    min-height: 100vh;
+    padding: 2.5rem 1rem 4rem;
+    line-height: 1.5;
+  }
+
+  .wrap { max-width: 560px; margin: 0 auto; }
+
+  /* ── HEADER ── */
+  .page-top {
+    margin-bottom: 2.5rem;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+  }
+
+  h1 {
+    font-family: var(--sans);
+    font-weight: 300;
+    font-size: clamp(2rem, 7vw, 2.8rem);
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    margin-bottom: 0.3rem;
+  }
+
+  h1 em { color: var(--green); font-style: normal; }
+
+  .subtitle {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+
+  /* ── STATS ── */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.6rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.85rem 0.9rem;
+  }
+
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+  }
+
+  .stat-val {
+    font-size: 1.5rem;
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  .stat-note {
+    font-size: 0.62rem;
+    color: #333;
+    margin-top: 0.2rem;
+  }
+
+  /* ── OVERALL PROGRESS ── */
+  .progress-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .progress-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.55rem;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--muted);
+  }
+
+  .progress-track {
+    height: 3px;
+    background: var(--dim);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green), #5eead4);
+    border-radius: 99px;
+    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+    width: 0%;
+  }
+
+  /* ── ZONES ── */
+  .zones-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+    margin-bottom: 2rem;
+  }
+
+  .zones-title {
+    font-family: var(--mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 0.7rem;
+  }
+
+  .zone-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.28rem 0;
+    font-size: 0.75rem;
+    border-bottom: 1px solid #111;
+  }
+
+  .zone-row:last-child { border-bottom: none; }
+  .zone-row.active { font-weight: 500; }
+  .zone-row.active .z-name { color: var(--green); }
+  .zone-row.active .z-val { color: var(--green); font-weight: 500; }
+
+  .z-name { color: #555; }
+
+  .z-val {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: #444;
+  }
+
+  .z-tag {
+    font-family: var(--mono);
+    font-size: 0.54rem;
+    background: #0d1f0d;
+    color: var(--green);
+    border: 1px solid #1a3a1a;
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+    letter-spacing: 0.06em;
+  }
+
+  /* ── WEEKS ── */
+  .week-block {
+    margin-bottom: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--surface);
+  }
+
+  .week-head {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.1rem 1.2rem;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+  }
+
+  .week-head:hover { background: #111; }
+
+  .week-num {
+    font-family: var(--mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 0.15rem;
+  }
+
+  .week-name {
+    font-size: 0.95rem;
+    font-weight: 400;
+  }
+
+  .week-done-text {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--muted);
+    margin-top: 0.1rem;
+  }
+
+  .week-head-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+  }
+
+  .week-bar-wrap {
+    width: 50px;
+    height: 3px;
+    background: var(--dim);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .week-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.3s ease;
+  }
+
+  .arrow {
+    font-size: 0.75rem;
+    color: var(--muted);
+    transition: transform 0.2s;
+    line-height: 1;
+  }
+
+  .arrow.open { transform: rotate(180deg); }
+
+  /* ── SESSION BODY ── */
+  .week-body {
+    display: none;
+    padding: 0 1.2rem 1.1rem;
+  }
+
+  .week-body.open { display: block; }
+
+  .week-hint {
+    font-size: 0.72rem;
+    color: #3a3a3a;
+    font-style: italic;
+    margin-bottom: 0.8rem;
+    padding: 0.55rem 0.75rem;
+    background: #0a0a0a;
+    border-radius: 7px;
+    border-left: 2px solid #1a1a1a;
+  }
+
+  /* ── SESSION CARD ── */
+  .session-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 0.5rem;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .session-card:hover { border-color: var(--border-hover); }
+
+  .session-card.done {
+    opacity: 0.45;
+    border-color: #161e16;
+    background: #0a0f0a;
+  }
+
+  .session-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.9rem 1rem;
+    cursor: pointer;
+  }
+
+  /* Checkbox */
+  .cb {
+    width: 19px;
+    height: 19px;
+    border: 1.5px solid #2a2a2a;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+
+  .cb:hover { border-color: #444; }
+
+  .session-card.done .cb {
+    background: var(--green);
+    border-color: var(--green);
+  }
+
+  .cb-check {
+    display: none;
+    font-size: 0.6rem;
+    color: #000;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .session-card.done .cb-check { display: block; }
+
+  /* Session info */
+  .sinfo { flex: 1; min-width: 0; }
+
+  .sinfo-top {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-bottom: 0.2rem;
+    flex-wrap: wrap;
+  }
+
+  .s-day {
+    font-family: var(--mono);
+    font-size: 0.58rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .s-badge {
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    letter-spacing: 0.06em;
+    padding: 0.12rem 0.4rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+  }
+
+  .badge-easy { background: #0a1f0a; color: var(--green); border: 1px solid #152a15; }
+  .badge-interval { background: #1f100a; color: var(--orange); border: 1px solid #2a1a10; }
+  .badge-taper { background: #0a0f1f; color: var(--blue); border: 1px solid #101a2a; }
+
+  .s-title {
+    font-size: 0.85rem;
+    font-weight: 400;
+  }
+
+  .session-card.done .s-title { text-decoration: line-through; color: #333; }
+
+  .s-toggle {
+    font-family: var(--mono);
+    font-size: 0.58rem;
+    color: #2a2a2a;
+    margin-top: 0.3rem;
+    transition: color 0.15s;
+  }
+
+  .session-card:hover .s-toggle { color: #3a3a3a; }
+
+  /* Details */
+  .s-details {
+    display: none;
+    padding: 0 1rem 0.9rem 2.7rem;
+  }
+
+  .s-details.open { display: block; }
+
+  .s-detail {
+    font-size: 0.73rem;
+    color: #3a3a3a;
+    padding: 0.18rem 0;
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+
+  .s-detail::before {
+    content: '–';
+    color: #222;
+    flex-shrink: 0;
+  }
+
+  /* ── RETEST BLOCK ── */
+  .retest-block {
+    margin-top: 1rem;
+    border: 1px solid #2a1a4a;
+    border-radius: 14px;
+    padding: 1.5rem 1.4rem;
+    background: #0a070f;
+    text-align: center;
+  }
+
+  .retest-label {
+    font-family: var(--mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+  }
+
+  .retest-title {
+    font-size: 1.1rem;
+    font-weight: 400;
+    color: var(--purple);
+    margin-bottom: 0.6rem;
+  }
+
+  .retest-body {
+    font-size: 0.78rem;
+    color: #444;
+    line-height: 1.7;
+  }
+
+  .retest-target {
+    display: inline-block;
+    margin-top: 0.9rem;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--green);
+    background: #0a1f0a;
+    border: 1px solid #152a15;
+    padding: 0.3rem 0.75rem;
+    border-radius: 5px;
+    letter-spacing: 0.06em;
+  }
+
+  footer {
+    text-align: center;
+    margin-top: 2.5rem;
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: #1e1e1e;
+    letter-spacing: 0.1em;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: #222; border-radius: 99px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="page-top">
+    <div class="eyebrow">6-Week Program · Keningau, Sabah</div>
+    <h1>VO₂max<br><em>Training Plan</em></h1>
+    <div class="subtitle">Every other day · Start Monday</div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-label">Baseline</div>
+      <div class="stat-val" style="color:var(--green)">29</div>
+      <div class="stat-note">VO₂max (Watch)</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Zone 2</div>
+      <div class="stat-val" style="color:var(--yellow)">151</div>
+      <div class="stat-note">BPM ceiling</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Goal</div>
+      <div class="stat-val" style="color:var(--orange)">40</div>
+      <div class="stat-note">For Trusmadi</div>
+    </div>
+  </div>
+
+  <!-- Overall progress -->
+  <div class="progress-wrap">
+    <div class="progress-row">
+      <span>Overall progress</span>
+      <span id="prog-text">0 / 22 sessions</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="prog-fill"></div>
+    </div>
+  </div>
+
+  <!-- HR Zones -->
+  <div class="zones-wrap">
+    <div class="zones-title">Your HR Zones — Max HR 188</div>
+    <div class="zone-row"><span class="z-name">Zone 1</span><span class="z-val" style="color:#3b82f6">&lt; 132 BPM</span></div>
+    <div class="zone-row active">
+      <span class="z-name">Zone 2</span>
+      <span class="z-val">132 – 151 BPM</span>
+      <span class="z-tag">Your Zone</span>
+    </div>
+    <div class="zone-row"><span class="z-name">Zone 3</span><span class="z-val" style="color:var(--yellow)">151 – 169 BPM</span></div>
+    <div class="zone-row"><span class="z-name">Zone 4</span><span class="z-val" style="color:var(--orange)">169 – 179 BPM</span></div>
+    <div class="zone-row"><span class="z-name">Zone 5</span><span class="z-val" style="color:#ef4444">179+ BPM</span></div>
+  </div>
+
+  <!-- Weeks container -->
+  <div id="weeks"></div>
+
+  <!-- Retest -->
+  <div class="retest-block">
+    <div class="retest-label">End of Week 6</div>
+    <div class="retest-title">🏁 Cooper Test Retest</div>
+    <div class="retest-body">
+      Same protocol as your first attempt.<br>
+      Straight flat route. Fresh legs. Same time of day.<br>
+      Run 12 minutes all out. Note your distance.
+    </div>
+    <div class="retest-target">Target → Beat 1,790m · VO₂max 33+</div>
+  </div>
+
+  <footer>Build the base · Trust the process · Trusmadi awaits</footer>
+</div>
+
+<script>
+const PLAN = [
+  {
+    week: 1, title: "Base Building", color: "#3ddc84",
+    note: "Purely about showing up. Run/walk is perfect. Don't worry about distance — focus on time in Zone 2.",
+    sessions: [
+      { id:"w1s1", day:"Session 1", type:"Easy Run", badge:"easy", details:[
+        "5 min warm up walk",
+        "20-25 min Zone 2 easy run (run/walk method)",
+        "Walk when HR hits 151 BPM",
+        "Walk until HR drops to ~135, then run again",
+        "5 min cool down walk",
+        "Shoes: Hoka Clifton 8 (skip lace for wide feet)",
+        "Watch: 1 finger above wrist bone, snug"
+      ]},
+      { id:"w1s2", day:"Session 2", type:"Easy Run", badge:"easy", details:[
+        "5 min warm up walk",
+        "20-25 min Zone 2 easy run (run/walk method)",
+        "Walk when HR hits 151 BPM",
+        "Walk until HR drops to ~135, then run again",
+        "5 min cool down walk",
+        "Try to breathe 3 steps in, 2 steps out"
+      ]},
+      { id:"w1s3", day:"Session 3", type:"Easy Run", badge:"easy", details:[
+        "5 min warm up walk",
+        "20-25 min Zone 2 easy run (run/walk method)",
+        "Walk when HR hits 151 BPM",
+        "Walk until HR drops to ~135, then run again",
+        "5 min cool down walk"
+      ]}
+    ]
+  },
+  {
+    week: 2, title: "Base Building", color: "#3ddc84",
+    note: "Same structure as week 1. Walk breaks should naturally get a little shorter as the heart adapts.",
+    sessions: [
+      { id:"w2s1", day:"Session 1", type:"Easy Run", badge:"easy", details:[
+        "5 min warm up walk",
+        "20-25 min Zone 2 easy run",
+        "HR alert: 151 BPM",
+        "5 min cool down walk",
+        "Small snack 45 min before if needed"
+      ]},
+      { id:"w2s2", day:"Session 2", type:"Easy Run", badge:"easy", details:[
+        "5 min warm up walk",
+        "20-25 min Zone 2 easy run",
+        "HR alert: 151 BPM",
+        "5 min cool down walk"
+      ]},
+      { id:"w2s3", day:"Session 3", type:"Easy Run", badge:"easy", details:[
+        "5 min warm up walk",
+        "20-25 min Zone 2 easy run",
+        "HR alert: 151 BPM",
+        "5 min cool down walk"
+      ]}
+    ]
+  },
+  {
+    week: 3, title: "Add Intervals", color: "#f5c842",
+    note: "First interval session this week! Easy runs must stay genuinely easy — don't let excitement push them harder.",
+    sessions: [
+      { id:"w3s1", day:"Session 1", type:"Easy Run", badge:"easy", details:[
+        "5 min warm up walk",
+        "25-30 min Zone 2 easy run",
+        "HR alert: 151 BPM",
+        "5 min cool down walk"
+      ]},
+      { id:"w3s2", day:"Session 2", type:"Intervals 🔥", badge:"interval", details:[
+        "5 min warm up walk + 3 min easy jog",
+        "6 × 1 min hard effort (Zone 4 — can't speak)",
+        "2 min easy walk/jog recovery between each",
+        "Total interval block: ~18 min",
+        "5 min cool down walk",
+        "Hard means breathing very heavy, not sprint"
+      ]},
+      { id:"w3s3", day:"Session 3", type:"Easy Run", badge:"easy", details:[
+        "5 min warm up walk",
+        "25-30 min Zone 2 easy run",
+        "HR alert: 151 BPM",
+        "5 min cool down walk"
+      ]},
+      { id:"w3s4", day:"Session 4", type:"Easy Run", badge:"easy", details:[
+        "5 min warm up walk",
+        "25-30 min Zone 2 easy run",
+        "HR alert: 151 BPM",
+        "5 min cool down walk"
+      ]},
+    ]
+  },
+  {
+    week: 4, title: "Build Consistency", color: "#f5c842",
+    note: "Your second interval week. Easy runs should feel noticeably easier than week 1 — that's your fitness improving.",
+    sessions: [
+      { id:"w4s1", day:"Session 1", type:"Easy Run", badge:"easy", details:[
+        "5 min warm up walk",
+        "25-30 min Zone 2 easy run",
+        "HR alert: 151 BPM",
+        "5 min cool down walk"
+      ]},
+      { id:"w4s2", day:"Session 2", type:"Intervals 🔥", badge:"interval", details:[
+        "5 min warm up walk + 3 min easy jog",
+        "6 × 1 min hard effort",
+        "2 min easy walk/jog recovery between each",
+        "Try to maintain same effort as week 3",
+        "5 min cool down walk"
+      ]},
+      { id:"w4s3", day:"Session 3", type:"Easy Run", badge:"easy", details:[
+        "5 min warm up walk",
+        "25-30 min Zone 2 easy run",
+        "HR alert: 151 BPM",
+        "5 min cool down walk"
+      ]},
+      { id:"w4s4", day:"Session 4", type:"Easy Run", badge:"easy", details:[
+        "5 min warm up walk",
+        "25-30 min Zone 2 easy run",
+        "HR alert: 151 BPM",
+        "5 min cool down walk"
+      ]},
+    ]
+  },
+  {
+    week: 5, title: "Build Intensity", color: "#f47c3c",
+    note: "Harder intervals now — 4×4 is a serious workout. Expect to feel it. Easy days must be genuinely easy to allow recovery.",
+    sessions: [
+      { id:"w5s1", day:"Session 1", type:"Easy Run", badge:"easy", details:[
+        "5 min warm up walk",
+        "30 min Zone 2 easy run",
+        "Should be running more continuously by now",
+        "5 min cool down walk"
+      ]},
+      { id:"w5s2", day:"Session 2", type:"Intervals 🔥", badge:"interval", details:[
+        "5 min warm up walk + 5 min easy jog",
+        "4 × 4 min hard effort (Zone 4)",
+        "4 min easy walk/jog recovery between each",
+        "Total interval block: ~32 min",
+        "5 min cool down walk",
+        "This is your hardest session yet — pace yourself"
+      ]},
+      { id:"w5s3", day:"Session 3", type:"Easy Run", badge:"easy", details:[
+        "5 min warm up walk",
+        "30 min Zone 2 easy run",
+        "HR alert: 151 BPM",
+        "5 min cool down walk"
+      ]},
+      { id:"w5s4", day:"Session 4", type:"Easy Run", badge:"easy", details:[
+        "5 min warm up walk",
+        "30 min Zone 2 easy run",
+        "HR alert: 151 BPM",
+        "5 min cool down walk"
+      ]},
+    ]
+  },
+  {
+    week: 6, title: "Peak Week", color: "#f47c3c",
+    note: "Final training week. Last session is shortened on purpose — save your legs for the Cooper retest next week.",
+    sessions: [
+      { id:"w6s1", day:"Session 1", type:"Easy Run", badge:"easy", details:[
+        "5 min warm up walk",
+        "30 min Zone 2 easy run",
+        "5 min cool down walk"
+      ]},
+      { id:"w6s2", day:"Session 2", type:"Intervals 🔥", badge:"interval", details:[
+        "5 min warm up walk + 5 min easy jog",
+        "4 × 4 min hard effort",
+        "4 min easy walk/jog recovery between each",
+        "5 min cool down walk",
+        "Give everything — last hard session"
+      ]},
+      { id:"w6s3", day:"Session 3", type:"Easy Run", badge:"easy", details:[
+        "5 min warm up walk",
+        "30 min Zone 2 easy run",
+        "5 min cool down walk"
+      ]},
+      { id:"w6s4", day:"Session 4 — Taper", type:"Easy Run (short)", badge:"taper", details:[
+        "5 min warm up walk",
+        "15-20 min very easy Zone 2 only",
+        "Deliberately shorter — rest the legs",
+        "5 min cool down walk",
+        "Cooper retest coming — stay fresh"
+      ]},
+    ]
+  },
+];
+
+const TOTAL = PLAN.reduce((a, w) => a + w.sessions.length, 0);
+let completed = JSON.parse(localStorage.getItem('vp_done') || '{}');
+let weekOpen = {};
+let sessionOpen = {};
+
+PLAN.forEach((_, i) => { weekOpen[i] = i === 0; });
+
+function save() {
+  localStorage.setItem('vp_done', JSON.stringify(completed));
+}
+
+function countDone() {
+  return Object.values(completed).filter(Boolean).length;
+}
+
+function weekDone(sessions) {
+  return sessions.filter(s => completed[s.id]).length;
+}
+
+function updateProgress() {
+  const done = countDone();
+  document.getElementById('prog-fill').style.width = (done / TOTAL * 100) + '%';
+  document.getElementById('prog-text').textContent = done + ' / ' + TOTAL + ' sessions';
+}
+
+function render() {
+  const container = document.getElementById('weeks');
+  container.innerHTML = '';
+
+  PLAN.forEach((wk, wi) => {
+    const wDone = weekDone(wk.sessions);
+    const wPct = wDone / wk.sessions.length * 100;
+    const isOpen = weekOpen[wi];
+
+    const el = document.createElement('div');
+    el.className = 'week-block';
+    el.innerHTML = `
+      <div class="week-head" data-wi="${wi}">
+        <div>
+          <div class="week-num" style="color:${wk.color}">Week ${wk.week}</div>
+          <div class="week-name">${wk.title}</div>
+          <div class="week-done-text">${wDone} of ${wk.sessions.length} done</div>
+        </div>
+        <div class="week-head-right">
+          <div class="week-bar-wrap">
+            <div class="week-bar-fill" style="width:${wPct}%;background:${wk.color}"></div>
+          </div>
+          <div class="arrow ${isOpen ? 'open' : ''}" id="arr-${wi}">▾</div>
+        </div>
+      </div>
+      <div class="week-body ${isOpen ? 'open' : ''}" id="wb-${wi}">
+        <div class="week-hint">${wk.note}</div>
+        ${wk.sessions.map(s => {
+          const isDone = !!completed[s.id];
+          const isExpanded = !!sessionOpen[s.id];
+          return `
+            <div class="session-card ${isDone ? 'done' : ''}" id="sc-${s.id}">
+              <div class="session-row">
+                <div class="cb" data-id="${s.id}" data-action="toggle">
+                  <span class="cb-check">✓</span>
+                </div>
+                <div class="sinfo" data-id="${s.id}" data-action="expand">
+                  <div class="sinfo-top">
+                    <span class="s-day">${s.day}</span>
+                    <span class="s-badge badge-${s.badge}">${s.badge.toUpperCase()}</span>
+                  </div>
+                  <div class="s-title">${s.type}</div>
+                  <div class="s-toggle">${isExpanded ? '▴ hide' : '▾ details'}</div>
+                </div>
+              </div>
+              <div class="s-details ${isExpanded ? 'open' : ''}" id="sd-${s.id}">
+                ${s.details.map(d => `<div class="s-detail">${d}</div>`).join('')}
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+    container.appendChild(el);
+  });
+
+  // Bind events
+  document.querySelectorAll('.week-head').forEach(h => {
+    h.addEventListener('click', () => {
+      const wi = +h.dataset.wi;
+      weekOpen[wi] = !weekOpen[wi];
+      document.getElementById('wb-' + wi).classList.toggle('open', weekOpen[wi]);
+      document.getElementById('arr-' + wi).classList.toggle('open', weekOpen[wi]);
+    });
+  });
+
+  document.querySelectorAll('[data-action="toggle"]').forEach(cb => {
+    cb.addEventListener('click', e => {
+      e.stopPropagation();
+      const id = cb.dataset.id;
+      completed[id] = !completed[id];
+      save();
+      render();
+      updateProgress();
+    });
+  });
+
+  document.querySelectorAll('[data-action="expand"]').forEach(si => {
+    si.addEventListener('click', () => {
+      const id = si.dataset.id;
+      sessionOpen[id] = !sessionOpen[id];
+      document.getElementById('sd-' + id).classList.toggle('open', sessionOpen[id]);
+      si.querySelector('.s-toggle').textContent = sessionOpen[id] ? '▴ hide' : '▾ details';
+    });
+  });
+}
+
+render();
+updateProgress();
+</script>
+</body>
+</html>
+
+```
